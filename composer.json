@@ -1,0 +1,19 @@
+{
+  "name": "SQS-worker",
+  "description": "Trait class that helps class to fetch SQS queue and manage messages",
+  "authors": [{
+    "name": "Andrea Quintino"
+  }],
+  "require-dev": {
+    "phpunit/phpunit": "^5.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "": "src/",
+      "test\\": "test/"
+    }
+  },
+  "require": {
+    "aws/aws-sdk-php": "2.*"
+  }
+}
