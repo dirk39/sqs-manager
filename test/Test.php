@@ -10,8 +10,12 @@
 class Test extends PHPUnit_Framework_TestCase
 {
 
-  public function testRun() {
-    $fake = new \test\fake\FakeTask;
-    $fake->runTrait();
+  public function testCheckOverlap()
+  {
+    $fakeListener = new test\fake\FakeSQSListener('aaa','bbb');
+    $this->assertFalse($fakeListener->execIsAlreadyRunning(), 'If not locked return false');
+
+    $this->assertTrue($fakeListener->execIsAlreadyRunning(),'looool');
   }
+
 }
