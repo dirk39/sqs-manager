@@ -13,9 +13,17 @@ class Test extends PHPUnit_Framework_TestCase
   public function testCheckOverlap()
   {
     $fakeListener = new test\fake\FakeSQSListener('aaa','bbb');
-    $this->assertFalse($fakeListener->execIsAlreadyRunning(), 'If not locked return false');
+    $this->assertTrue($fakeListener->execSetPermanentListener(), 'If not locked return false');
 
-    $this->assertTrue($fakeListener->execIsAlreadyRunning(),'looool');
+    $pid = pcntl_fork();
+    if ($pid == -1) {
+      die('zombie');
+    } else if ($pid) {
+      pcntl_waitpid($pid, $status); //Protect against Zombie children
+    } else {
+      $otherFakeListener = new test\fake\FakeSQSListener('aaa','bbb');
+      $this->assertFalse($otherFakeListener->execSetPermanentListener(),'looool');
+    }
   }
 
 }

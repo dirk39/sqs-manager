@@ -6,6 +6,7 @@ class SQSListener
 {
   /** @var Aws\Sqs\SqsClient */
   private $client;
+  private $lockHandler;
 
   public function __construct($appId, $appSecret, $region = 'eu-west-1')
   {
@@ -14,33 +15,38 @@ class SQSListener
       'secret' => $appSecret,
       'region' => $region
     ]);
+
+    $this->lockHandler = new \Symfony\Component\Filesystem\LockHandler($this->getTempFileName());
   }
 
-  public function run($queueName, $infiniteLoop = false, $options = [])
+  /**
+   * @param $queueName
+   * @param bool $alwaysListening
+   */
+  public function run($queueName, $alwaysListening = false)
   {
-    if($infiniteLoop && $this->isAlreadyRunning())
+    if($alwaysListening && !$this->setPermanentListener())
     {
-      $this->isAlreadyRunning();
+      return;
     }
   }
 
-  protected function isAlreadyRunning()
+  protected function setPermanentListener()
   {
-    $filename = sys_get_temp_dir().DIRECTORY_SEPARATOR.sha1(__CLASS__).'.lock';
-    $fh = fopen($filename, file_exists($filename)?'r':'x+');
-
-    $wouldblock = null;
-    if(!flock($fh, LOCK_EX|LOCK_NB, $wouldblock))
+    if($this->lockHandler->lock())
     {
-      if($wouldblock === 1)
-      {
-        return true;
-      }
-
-      throw new Exception\MissingWritePermissionException;
+      return true;
     }
 
     return false;
+  }
+
+  /**
+   * @return string
+   */
+  protected function getTempFileName()
+  {
+    return sha1(__CLASS__).'.lock';
   }
 
 }

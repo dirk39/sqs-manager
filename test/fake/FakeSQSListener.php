@@ -12,9 +12,9 @@ namespace test\fake;
 class FakeSQSListener extends \SQSListener
 {
 
-  public function execIsAlreadyRunning()
+  public function execSetPermanentListener()
   {
-    return $this->isAlreadyRunning();
+    return $this->setPermanentListener();
   }
 
 }
