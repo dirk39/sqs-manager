@@ -44,7 +44,13 @@ class Listener
     {
       /** @var Guzzle\Service\Resource\Model $response */
       $response = $this->client->receiveMessage($config);
+      var_dump($response);die;
+
       $messages = (array)$response['Messages'];
+      if($messages)
+      {
+        $messageCollection = new MessageCollection($messages);
+      }
       foreach ($messages as $message) {
         call_user_func($callback, $message);
         $this->client->deleteMessage([
