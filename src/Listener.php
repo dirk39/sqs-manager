@@ -3,7 +3,7 @@
 use Aws\Sqs\SqsClient;
 use \Symfony\Component\Filesystem\LockHandler;
 
-class SQSListener
+class Listener
 {
   /** @var Aws\Sqs\SqsClient */
   private $client;
@@ -21,15 +21,16 @@ class SQSListener
     ]);
 
     $this->lockHandler = new LockHandler($this->getTempFileName());
-
     $this->listenerConfig = $listenerConfig;
   }
 
   /**
    * @param $queueName
+   * @param mixed $callback
    * @param bool $alwaysListening
+   * @param array $options
    */
-  public function run($queueName, array $callback, $alwaysListening = false)
+  public function run($queueName, $callback, $alwaysListening = false, array $options = [])
   {
     if($alwaysListening && !$this->setPermanentListener())
     {
@@ -37,13 +38,13 @@ class SQSListener
     }
 
     $queueUrl = $this->getQueueUrl($queueName);
-    $config = ['QueueUrl' => $queueUrl] + $this->listenerConfig;
+    $config = array_replace(['QueueUrl' => $queueUrl] + $this->listenerConfig, $options);
 
     do
     {
       /** @var Guzzle\Service\Resource\Model $response */
       $response = $this->client->receiveMessage($config);
-      $messages = $response['Messages'];
+      $messages = (array)$response['Messages'];
       foreach ($messages as $message) {
         call_user_func($callback, $message);
         $this->client->deleteMessage([
@@ -51,6 +52,7 @@ class SQSListener
           'ReceiptHandle' => $message['ReceiptHandle']
         ]);
       }
+
     }while($alwaysListening);
   }
 
@@ -69,8 +71,7 @@ class SQSListener
 
   protected function setPermanentListener()
   {
-    if($this->lockHandler->lock())
-    {
+    if($this->lockHandler->lock()) {
       return true;
     }
 
@@ -93,10 +94,5 @@ class SQSListener
     }
 
     $this->listenerConfig[$key] = $value;
-  }
-
-  public function getConfig($key, $default = null)
-  {
-    return array_key_exists($key, $this->listenerConfig)? $this->listenerConfig[$key]: $default;
   }
 }

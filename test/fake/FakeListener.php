@@ -9,7 +9,7 @@
 namespace test\fake;
 
 
-class FakeSQSListener extends \SQSListener
+class FakeListener extends \Listener
 {
 
   public function execSetPermanentListener()
