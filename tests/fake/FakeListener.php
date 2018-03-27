@@ -12,9 +12,9 @@ namespace test\fake;
 class FakeListener extends \Listener
 {
 
-  public function execSetPermanentListener()
+  public function execSetPermanentListener($queueName)
   {
-    return $this->setPermanentListener();
+    return $this->setPermanentListener($queueName);
   }
 
 }

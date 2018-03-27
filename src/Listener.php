@@ -20,7 +20,6 @@ class Listener
       'region' => $region
     ]);
 
-    $this->lockHandler = new LockHandler($this->getTempFileName());
     $this->listenerConfig = $listenerConfig;
   }
 
@@ -32,7 +31,7 @@ class Listener
    */
   public function run($queueName, $callback, $alwaysListening = false, array $options = [])
   {
-    if($alwaysListening && !$this->setPermanentListener())
+    if($alwaysListening && !$this->setPermanentListener($queueName))
     {
       return;
     }
@@ -44,8 +43,6 @@ class Listener
     {
       /** @var Guzzle\Service\Resource\Model $response */
       $response = $this->client->receiveMessage($config);
-      var_dump($response);die;
-
       $messages = (array)$response['Messages'];
       if($messages)
       {
@@ -75,8 +72,13 @@ class Listener
     return $result['QueueUrl'];
   }
 
-  protected function setPermanentListener()
+  /**
+   * @param $queueName
+   * @return bool
+   */
+  protected function setPermanentListener($queueName)
   {
+    $this->lockHandler = new LockHandler($this->getTempFileName($queueName));
     if($this->lockHandler->lock()) {
       return true;
     }
@@ -85,11 +87,12 @@ class Listener
   }
 
   /**
+   * @param $queueName
    * @return string
    */
-  protected function getTempFileName()
+  protected function getTempFileName($queueName)
   {
-    return sha1(__CLASS__).'.lock';
+    return sha1(__CLASS__.'_'.$queueName).'.lock';
   }
 
   public function setConfig($key, $value)
