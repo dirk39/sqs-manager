@@ -14,10 +14,10 @@ class Listener
 
   public function __construct($appId, $appSecret, $region = 'eu-west-1', array $listenerConfig = [])
   {
-    $this->client = SqsClient::factory([
-      'key' => $appId,
-      'secret' => $appSecret,
-      'region' => $region
+    $this->client = new SqsClient([
+      'credentials' => ['key' => $appId, 'secret' => $appSecret],
+      'region' => $region,
+      'version' => '2012-11-05'
     ]);
 
     $this->listenerConfig = $listenerConfig;
