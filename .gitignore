@@ -1,3 +1,4 @@
 vendor/*
 .idea/*
 test_run.php
+tests/config.php
