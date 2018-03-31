@@ -5,23 +5,50 @@ class Message implements MessageInterface
   private $messageId;
   private $receiptHandle;
   private $body;
-  private $deleted = false;
-  private $client;
-  private $queueUrl;
+  private $attributes = [];
+  private $messageAttributes = [];
 
-  /**
-   * Message constructor.
-   * @param array $message
-   * @param $queueUrl
-   * @param \Aws\Sqs\SqsClient $client
-   */
-  public function __construct(array $message, $queueUrl, \Aws\Sqs\SqsClient $client)
+
+  public function __construct($messageId, $receiptHandle, $md5OfBody, $body, array $attributes = [], array $messageAttributes = [])
   {
-    $this->queueUrl = $queueUrl;
-    $this->body = $message['Body'];
-    $this->receiptHandle = $message['ReceiptHandle'];
-    $this->messageId = $message['MessageId'];
-    $this->client = $client;
+    $this->validateMessage($messageId, $receiptHandle, $md5OfBody, $body, $attributes, $messageAttributes);
+
+    $this->messageId = $messageId;
+    $this->receiptHandle = $receiptHandle;
+    $this->body = $body;
+    $this->attributes = $attributes;
+    $this->messageAttributes = $messageAttributes;
+  }
+
+  private function validateMessage($messageId, $receiptHandle, $md5OfBody, $body, $attributes, $messageAttributes)
+  {
+    if(!is_string($messageId)) {
+      throw new \InvalidArgumentException("messageId must be a string");
+    }
+
+    if(!is_string($receiptHandle)) {
+      throw new \InvalidArgumentException("receiptHandle must be a string");
+    }
+
+    if(!is_string($md5OfBody)) {
+      throw new \InvalidArgumentException("md5OfBody must be a string");
+    }
+
+    if(!is_string($body) || md5($body) !== $md5OfBody) {
+      throw new \InvalidArgumentException("Invalid body");
+    }
+
+    if(!is_array($attributes))
+    {
+      throw new \InvalidArgumentException("attributes must be an array");
+    }
+
+    if(!is_array($messageAttributes))
+    {
+      throw new \InvalidArgumentException("attributes must be an array");
+    }
+
+    return true;
   }
 
   public function getBody()
@@ -34,21 +61,14 @@ class Message implements MessageInterface
     return $this->receiptHandle;
   }
 
-  public function deleteMessage()
+  public function getAttributes()
   {
-    if($this->deleted)
-    {
-      return true;
-    }
+    return $this->getAttributes();
+  }
 
-    $this->client->deleteMessage([
-      'QueueUrl' => $this->queueUrl,
-      'ReceiptHandle' => $this->receiptHandle
-    ]);
-
-    $this->deleted = true;
-
-    return true;
+  public function getMessageAttributes()
+  {
+    return $this->messageAttributes;
   }
 
 }
