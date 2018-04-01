@@ -16,9 +16,9 @@ interface ManagerInterface
    * @param $queueName
    * @param $callback
    * @param bool $keepAlive
-   * @param array $options
+   * @param array $listenerConfigs
    */
-  public function run($queueName, $callback, $keepAlive = false, $options = []);
+  public function run($queueName, $callback, $keepAlive = false, array $listenerConfigs = []);
 
   /**
    * @param $seconds

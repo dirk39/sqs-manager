@@ -44,13 +44,34 @@ class Manager implements ManagerInterface
     return $this;
   }
 
-  public function run($queueName, $callback, $keepAlive = false, $options = [])
+  public function run($queueName, $callback, $keepAlive = false, array $listenerConfigs = [])
   {
     if($keepAlive)
     {
       $this->setPermanentListener($queueName);
     }
 
+    $configs = $this->prepareListenerConfigs($listenerConfigs);
+
+
+
+
+  }
+
+  /**
+   * @param array $options
+   *
+   * @return array
+   */
+  protected function prepareListenerConfigs(array $options = [])
+  {
+    $defaultOptions = [
+      'MaxNumberOfMessages' => $this->maxNumberOfMessages,
+      'VisibilityTimeout' => $this->visibilityTimeout,
+      'WaitTimeSeconds' => $this->waitTimeSeconds
+    ];
+
+    return array_replace($defaultOptions, $options);
   }
 
   /**
