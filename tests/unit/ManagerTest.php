@@ -20,7 +20,8 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
       pcntl_waitpid($pid, $status); //Protect against Zombie children
     } else {
       $otherFakeListener = new FakeManager('appId','appSecret', 'eu-west-1');
-      $this->assertFalse($otherFakeListener->execSetPermanentListener($queueName),'If already running return false');
+      $this->expectException(\Exception\ListenerAlreadyRunningException::class);
+      $otherFakeListener->execSetPermanentListener($queueName);
     }
   }
 

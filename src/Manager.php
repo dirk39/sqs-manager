@@ -46,29 +46,33 @@ class Manager implements ManagerInterface
 
   public function run($queueName, $callback, $keepAlive = false, $options = [])
   {
-
+    if($keepAlive)
+    {
+      $this->setPermanentListener($queueName);
+    }
 
   }
 
   /**
    * @param $queueName
-   * @return bool
+   *
+   * @throws Exception\ListenerAlreadyRunningException
    */
   protected function setPermanentListener($queueName)
   {
     $this->lockHandler = new LockHandler($this->getTempFileName($queueName));
-    if($this->lockHandler->lock()) {
-      return true;
+    if(!$this->lockHandler->lock()) {
+      throw new Exception\ListenerAlreadyRunningException($queueName);
     }
 
-    return false;
+    return true;
   }
 
   /**
    * @param $queueName
    * @return string
    */
-  protected function getTempFileName($queueName)
+  private function getTempFileName($queueName)
   {
     return sha1(__CLASS__.'_'.$queueName).'.lock';
   }

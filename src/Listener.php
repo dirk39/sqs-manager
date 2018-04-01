@@ -28,11 +28,6 @@ class Listener
    */
   public function run($queueName, $callback, $alwaysListening = false, array $options = [])
   {
-    if($alwaysListening && !$this->setPermanentListener($queueName))
-    {
-      return;
-    }
-
     $queueUrl = $this->getQueueUrl($queueName);
     $config = array_replace(['QueueUrl' => $queueUrl] + $this->listenerConfig, $options);
 
