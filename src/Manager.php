@@ -2,10 +2,11 @@
 
 
 use \Aws\Sqs\SqsClient;
+use \Symfony\Component\Filesystem\LockHandler;
 
 class Manager implements ManagerInterface
 {
-  private $client;
+  private $client, $lockHandler;
 
   private $version = '2012-11-05';
 
@@ -46,6 +47,30 @@ class Manager implements ManagerInterface
   public function run($queueName, $callback, $keepAlive = false, $options = [])
   {
 
+
+  }
+
+  /**
+   * @param $queueName
+   * @return bool
+   */
+  protected function setPermanentListener($queueName)
+  {
+    $this->lockHandler = new LockHandler($this->getTempFileName($queueName));
+    if($this->lockHandler->lock()) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * @param $queueName
+   * @return string
+   */
+  protected function getTempFileName($queueName)
+  {
+    return sha1(__CLASS__.'_'.$queueName).'.lock';
   }
 
 

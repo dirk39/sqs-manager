@@ -1,15 +1,15 @@
 <?php
 
 namespace unit;
-use \test\fake\FakeListener;
+use \test\fake\FakeManager;
 
-class ListenerTest extends \PHPUnit_Framework_TestCase
+class ManagerTest extends \PHPUnit_Framework_TestCase
 {
 
   /** @test */
   public function testCheckOverlap()
   {
-    $fakeListener = new FakeListener('appId','appSecret');
+    $fakeListener = new FakeManager('appId','appSecret', 'eu-west-1');
     $queueName = 'queueTest';
     $this->assertTrue($fakeListener->execSetPermanentListener($queueName), 'If not locked return true');
 
@@ -19,7 +19,7 @@ class ListenerTest extends \PHPUnit_Framework_TestCase
     } else if ($pid) {
       pcntl_waitpid($pid, $status); //Protect against Zombie children
     } else {
-      $otherFakeListener = new FakeListener('appId','appSecret');
+      $otherFakeListener = new FakeManager('appId','appSecret', 'eu-west-1');
       $this->assertFalse($otherFakeListener->execSetPermanentListener($queueName),'If already running return false');
     }
   }

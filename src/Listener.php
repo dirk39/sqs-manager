@@ -1,14 +1,11 @@
 <?php
 
 use Aws\Sqs\SqsClient;
-use \Symfony\Component\Filesystem\LockHandler;
 
 class Listener
 {
   /** @var Aws\Sqs\SqsClient */
   private $client;
-  /** @var \Symfony\Component\Filesystem\LockHandler  */
-  private $lockHandler;
 
   private $listenerConfig = [];
 
@@ -70,29 +67,6 @@ class Listener
     ]);
 
     return $result['QueueUrl'];
-  }
-
-  /**
-   * @param $queueName
-   * @return bool
-   */
-  protected function setPermanentListener($queueName)
-  {
-    $this->lockHandler = new LockHandler($this->getTempFileName($queueName));
-    if($this->lockHandler->lock()) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * @param $queueName
-   * @return string
-   */
-  protected function getTempFileName($queueName)
-  {
-    return sha1(__CLASS__.'_'.$queueName).'.lock';
   }
 
   public function setConfig($key, $value)
