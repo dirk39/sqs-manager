@@ -12,6 +12,8 @@ class Manager implements ManagerInterface
 
   private $visibilityTimeout = 30, $maxNumberOfMessages = 1, $waitTimeSeconds;
 
+  private $timeReceivedMessage;
+
   public function __construct($appId, $appSecret, $region, array $configs = [])
   {
     $configs = array_replace([
@@ -51,11 +53,118 @@ class Manager implements ManagerInterface
       $this->setPermanentListener($queueName);
     }
 
-    $configs = $this->prepareListenerConfigs($listenerConfigs);
+    $queueUrl = $this->getQueueUrl($queueName);
+    $configs = $this->prepareListenerConfigs($listenerConfigs + ['QueueUrl' => $queueUrl]);
+
+    do
+    {
+      $response = $this->client->receiveMessage($configs);
+      $messages = (array)$response['Messages'];
+      if(!$messages)
+      {
+        continue;
+      }
+
+      $this->timeReceivedMessage = microtime(true);
+      $messages = $this->prepareMessageCollection($messages);
+
+      try
+      {
+        foreach ($messages as $key => $message) {
+          $this->checkMessageTimedOut();
+
+          call_user_func($callback, $message);
+
+          $this->deleteMessage($queueUrl, $message);
+
+        }
+      }
+      catch(\Exception $e) {
+        $this->releaseAllMessages($queueUrl, $messages);
+      }
 
 
+    }while($keepAlive);
+  }
 
 
+  /**
+   * @param string $queueUrl
+   * @param array $messages
+   * @param integer $timeout
+   */
+  protected function changeVisibilityTimeout($queueUrl, array $messages, $timeout)
+  {
+    foreach (array_chunk($messages, 10) as $chunkedMessages) {
+      $params = [
+        'Entries' => array_map(function(Message $message) use ($timeout){
+          return [
+            'Id' => uniqid("id"),
+            'ReceiptHandle' => $message->getReceipt(),
+            'VisibilityTimeout' => $timeout,
+          ];
+        }, $chunkedMessages),
+        'QueueUrl' => $queueUrl
+      ];
+
+      $result = $this->client->changeMessageVisibilityBatch($params);
+
+
+    }
+  }
+
+  /**
+   * @param string $queueUrl
+   * @param array $messages
+   */
+  protected function releaseAllMessages($queueUrl, array $messages)
+  {
+    $this->changeVisibilityTimeout($queueUrl, $messages, 0);
+  }
+
+  protected function checkMessageTimedOut()
+  {
+    if(($this->timeReceivedMessage + $this->visibilityTimeout) <= microtime(true)) {
+      throw new Exception\VisibilityTimeoutException;
+    }
+  }
+
+  /**
+   * @param array $messages
+   * @return array
+   */
+  protected function prepareMessageCollection(array $messages)
+  {
+    $messageCollection = [];
+
+    foreach ($messages as $message)
+    {
+      $messageCollection[] = new Message($message['MessageId'],$message['ReceiptHandle'],$message['MD5OfBody'],
+        $message['Body'], $message['Attributes'], $message['MessageAttributes']);
+    }
+
+    return $messageCollection;
+  }
+
+  protected function deleteMessage($queueUrl, Message $message)
+  {
+    $this->client->deleteMessage([
+      'QueueUrl' => $queueUrl,
+      'ReceiptHandle' => $message->getReceipt()
+    ]);
+  }
+
+  protected function getQueueUrl($queueName)
+  {
+    if(filter_var($queueName,FILTER_VALIDATE_URL)) {
+      return $queueName;
+    }
+
+    $result = $this->client->getQueueUrl([
+      'QueueName' => $queueName
+    ]);
+
+    return $result['QueueUrl'];
   }
 
   /**
