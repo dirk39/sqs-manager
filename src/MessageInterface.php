@@ -12,7 +12,7 @@ interface MessageInterface
    * @param array $attributes
    * @param array $messageAttributes
    */
-  public function __construct($messageId, $receiptHandle, $md5OfBody, $body, array $attributes = [], array $messageAttributes = []);
+  public function __construct($messageId, $receiptHandle, $md5OfBody, $body, $attributes = [], $messageAttributes = []);
 
   /**
    * @return string

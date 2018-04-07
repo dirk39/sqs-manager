@@ -9,7 +9,7 @@ class Message implements MessageInterface
   private $messageAttributes = [];
 
 
-  public function __construct($messageId, $receiptHandle, $md5OfBody, $body, array $attributes = [], array $messageAttributes = [])
+  public function __construct($messageId, $receiptHandle, $md5OfBody, $body, $attributes = [], $messageAttributes = [])
   {
     $this->validateMessage($messageId, $receiptHandle, $md5OfBody, $body, $attributes, $messageAttributes);
 
@@ -38,12 +38,12 @@ class Message implements MessageInterface
       throw new \InvalidArgumentException("Invalid body");
     }
 
-    if(!is_array($attributes))
+    if(!is_null($attributes) && !is_array($attributes))
     {
       throw new \InvalidArgumentException("attributes must be an array");
     }
 
-    if(!is_array($messageAttributes))
+    if(!is_null($messageAttributes) && !is_array($messageAttributes))
     {
       throw new \InvalidArgumentException("attributes must be an array");
     }

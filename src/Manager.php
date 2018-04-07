@@ -27,13 +27,22 @@ class Manager implements ManagerInterface
 
   public function setMaxNumberOfMessages($number)
   {
-    $this->maxNumberOfMessages = $number;
+    if(!is_integer($number) || $number < 1 || $number > 10)
+    {
+      throw new \InvalidArgumentException('Number of messages must be an integer between 1 and 10');
+    }
+    $this->maxNumberOfMessages = (int)$number;
 
     return $this;
   }
 
   public function setVisibilityTimeout($seconds)
   {
+    if(!is_integer($seconds) || $seconds < 0 || $seconds > (12*3600))
+    {
+      throw new \InvalidArgumentException('Visibility timeout must be an integer between 1 and 43200');
+    }
+
     $this->visibilityTimeout = $seconds;
 
     return $this;
@@ -41,6 +50,11 @@ class Manager implements ManagerInterface
 
   public function setWaitTimeSeconds($seconds)
   {
+    if(!is_integer($seconds) || $seconds < 1 || $seconds > (20))
+    {
+      throw new \InvalidArgumentException('Wait time must be an integer between 1 and 20');
+    }
+
     $this->waitTimeSeconds = $seconds;
 
     return $this;
@@ -174,11 +188,13 @@ class Manager implements ManagerInterface
    */
   protected function prepareListenerConfigs(array $options = [])
   {
-    $defaultOptions = [
+    $defaultOptions = array_filter([
       'MaxNumberOfMessages' => $this->maxNumberOfMessages,
       'VisibilityTimeout' => $this->visibilityTimeout,
       'WaitTimeSeconds' => $this->waitTimeSeconds
-    ];
+    ], function($item){
+      return !is_null($item);
+    });
 
     return array_replace($defaultOptions, $options);
   }
