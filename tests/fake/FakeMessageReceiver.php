@@ -14,4 +14,8 @@ class FakeMessageReceiver
 
   public function doNothing(\Message $message){}
 
+  public function doThrowException(\Message $message)
+  {
+    throw new \Exception('YOU SHALL NOT PASS');
+  }
 }

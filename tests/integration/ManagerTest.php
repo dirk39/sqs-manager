@@ -19,12 +19,11 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
   /** @var SqsClient */
   private static $client;
   private static $version = '2012-11-05';
-  private static $queueName = 'dirk39_test_manager';
   private static $queueUrl = '';
 
   public static function setUpBeforeClass()
   {
-    if(!defined('AWS_KEY') || !defined('AWS_SECRET') || !defined('AWS_REGION'))
+    if(!defined('AWS_KEY') || !defined('AWS_SECRET') || !defined('AWS_REGION') || !defined('AWS_QUEUE_NAME'))
     {
       self::$missingCredentials = true;
       return;
@@ -37,7 +36,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     ]);
 
     self::$queueUrl = self::$client->createQueue([
-      'QueueName' => self::$queueName
+      'QueueName' => AWS_QUEUE_NAME
     ])['QueueUrl'];
 
     for($i = 0;$i < 15; $i++)
@@ -46,15 +45,6 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         'Id' => $i,
         'MessageBody' => \json_encode(['id' => $i, 'message' => 'ciao'])
       ];
-    }
-  }
-
-  protected function setUp()
-  {
-    if(self::$missingCredentials)
-    {
-      $this->markTestSkipped("Missing config.php file with constants 'AWS_KEY', 'AWS_SECRET' and 'AWS_REGION'");
-      return;
     }
 
     foreach (array_chunk(self::$messages, 10) as $chunked ) {
@@ -65,14 +55,13 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     }
   }
 
-  protected function tearDown()
+  protected function setUp()
   {
     if(self::$missingCredentials)
     {
+      $this->markTestSkipped("Missing config.php file with constants 'AWS_KEY', 'AWS_SECRET' and 'AWS_REGION'");
       return;
     }
-
-    self::$client->purgeQueue(['QueueUrl' => self::$queueUrl]);
   }
 
   public static function tearDownAfterClass()
@@ -95,13 +84,37 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     $manager = new \Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
     $messageReceiver = new FakeMessageReceiver();
     $manager->setMaxNumberOfMessages(10);
-    $manager->run(self::$queueName, [$messageReceiver, 'doNothing']);
+
+
+    $manager->run(AWS_QUEUE_NAME, [$messageReceiver, 'doNothing']);
+
 
     /* SQS have a eventual consistency read so i wait a while before update stats*/
     sleep('20');
     $queueAttributesAfterTest = $this->getQueueAttributes();
-
     $this->assertLessThan(
+      $queueAttributesBeforeTest['ApproximateNumberOfMessages'],
+      $queueAttributesAfterTest['ApproximateNumberOfMessages']
+    );
+  }
+
+  public function testReleaseAllMessagesIfExceptionThrown()
+  {
+    $queueAttributesBeforeTest = $this->getQueueAttributes();
+    $manager = new \Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
+    $messageReceiver = new FakeMessageReceiver();
+    $manager->setMaxNumberOfMessages(10);
+
+
+    try
+    {
+      $manager->run(AWS_QUEUE_NAME, [$messageReceiver, 'doThrowException']);
+    }catch (\Exception $e) {}
+
+
+    sleep('20');
+    $queueAttributesAfterTest = $this->getQueueAttributes();
+    $this->assertEquals(
       $queueAttributesBeforeTest['ApproximateNumberOfMessages'],
       $queueAttributesAfterTest['ApproximateNumberOfMessages']
     );
