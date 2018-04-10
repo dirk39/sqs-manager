@@ -120,6 +120,26 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     );
   }
 
+  public function testDeleteUsedMessagesAlreadyDeleted()
+  {
+    $queueAttributesBeforeTest = $this->getQueueAttributes();
+    $manager = new \Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
+    $messageReceiver = new FakeMessageReceiver();
+    $manager->setMaxNumberOfMessages(10);
+
+
+    $manager->run(AWS_QUEUE_NAME, [$messageReceiver, 'doDeleteMessage']);
+
+
+    /* SQS have a eventual consistency read so i wait a while before update stats*/
+    sleep('20');
+    $queueAttributesAfterTest = $this->getQueueAttributes();
+    $this->assertLessThan(
+      $queueAttributesBeforeTest['ApproximateNumberOfMessages'],
+      $queueAttributesAfterTest['ApproximateNumberOfMessages']
+    );
+  }
+
   private function getQueueAttributes()
   {
     return self::$client->getQueueAttributes([
