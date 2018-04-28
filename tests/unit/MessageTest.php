@@ -8,7 +8,7 @@
 
 namespace test\unit;
 
-use \Message;
+use SQSManager\Message;
 
 class MessageTest extends \PHPUnit_Framework_TestCase
 {

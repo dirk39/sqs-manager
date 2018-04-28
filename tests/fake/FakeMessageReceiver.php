@@ -8,20 +8,20 @@
 
 namespace test\fake;
 
-
+use SQSManager\Message;
 use Aws\Sqs\SqsClient;
 
 class FakeMessageReceiver
 {
 
-  public function doNothing(\Message $message){}
+  public function doNothing(Message $message){}
 
-  public function doThrowException(\Message $message)
+  public function doThrowException(Message $message)
   {
     throw new \Exception('YOU SHALL NOT PASS');
   }
 
-  public function doDeleteMessage(\Message $message)
+  public function doDeleteMessage(Message $message)
   {
     $client = new SqsClient([
       'credentials' => ['key' => AWS_KEY, 'secret' => AWS_SECRET],

@@ -2,6 +2,9 @@
 
 namespace unit;
 use \test\fake\FakeManager;
+use SQSManager\Manager;
+use SQSManager\Exception\ListenerAlreadyRunningException;
+use SQSManager\Exception\VisibilityTimeoutException;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
 {
@@ -20,14 +23,14 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
       pcntl_waitpid($pid, $status); //Protect against Zombie children
     } else {
       $otherFakeListener = new FakeManager('appId','appSecret', 'eu-west-1');
-      $this->expectException(\Exception\ListenerAlreadyRunningException::class);
+      $this->expectException(ListenerAlreadyRunningException::class);
       $otherFakeListener->execSetPermanentListener($queueName);
     }
   }
 
   public function testSetVisibilityTimeoutNotInt()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Visibility timeout must be an integer between 1 and 43200");
     $manager->setVisibilityTimeout(1.10);
@@ -35,7 +38,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
   public function testSetVisibilityTimeoutOverUpperLimit()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Visibility timeout must be an integer between 1 and 43200");
     $manager->setVisibilityTimeout(86400);
@@ -43,7 +46,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
   public function testSetVisibilityTimeoutUnderLowerLimit()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Visibility timeout must be an integer between 1 and 43200");
     $manager->setVisibilityTimeout(-1);
@@ -52,7 +55,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
   public function testSetMaxNumberOfMessagesNotInt()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Number of messages must be an integer between 1 and 10");
     $manager->setMaxNumberOfMessages(1.10);
@@ -60,7 +63,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
   public function testSetMaxNumberOfMessagesOverUpperLimit()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Number of messages must be an integer between 1 and 10");
     $manager->setMaxNumberOfMessages(20);
@@ -68,7 +71,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
   public function testSetMaxNumberOfMessagesUnderLowerLimit()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Number of messages must be an integer between 1 and 10");
     $manager->setMaxNumberOfMessages(0);
@@ -77,7 +80,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
   public function testSetWaitTimeSecondsNotInt()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Wait time must be an integer between 1 and 20");
     $manager->setWaitTimeSeconds(1.10);
@@ -85,7 +88,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
   public function testSetWaitTimeSecondsOverUpperLimit()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Wait time must be an integer between 1 and 20");
     $manager->setWaitTimeSeconds(50);
@@ -93,7 +96,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
   public function testSetWaitTimeSecondsUnderLowerLimit()
   {
-    $manager = new \Manager('appId', 'AppSecret', 'eu-west-1');
+    $manager = new Manager('appId', 'AppSecret', 'eu-west-1');
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage("Wait time must be an integer between 1 and 20");
     $manager->setWaitTimeSeconds(0);

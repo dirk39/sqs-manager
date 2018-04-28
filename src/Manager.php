@@ -1,8 +1,10 @@
 <?php
 
+namespace SQSManager;
 
 use \Aws\Sqs\SqsClient;
 use \Symfony\Component\Filesystem\LockHandler;
+use SQSManager\Exception\VisibilityTimeoutException;
 
 class Manager implements ManagerInterface
 {
@@ -139,7 +141,7 @@ class Manager implements ManagerInterface
   protected function checkMessageTimedOut()
   {
     if(($this->timeReceivedMessage + $this->visibilityTimeout) <= microtime(true)) {
-      throw new Exception\VisibilityTimeoutException;
+      throw new VisibilityTimeoutException;
     }
   }
 

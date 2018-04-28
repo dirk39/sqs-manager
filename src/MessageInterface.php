@@ -1,5 +1,7 @@
 <?php
 
+namespace SQSManager;
+
 interface MessageInterface
 {
 

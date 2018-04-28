@@ -1,5 +1,7 @@
 <?php
 
+namespace SQSManager;
+
 class Message implements MessageInterface
 {
   private $messageId;

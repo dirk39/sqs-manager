@@ -1,6 +1,6 @@
 <?php
 
-namespace Exception;
+namespace SQSManager\Exception;
 
 
 class VisibilityTimeoutException extends \RuntimeException

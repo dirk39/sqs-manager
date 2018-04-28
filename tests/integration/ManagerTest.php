@@ -9,7 +9,7 @@
 namespace test\integration;
 use \Aws\Sqs\SqsClient;
 
-use Manager;
+use SQSManager\Manager;
 use test\fake\FakeMessageReceiver;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
@@ -81,7 +81,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
   public function testManageMessagesAndDeleteThem()
   {
     $queueAttributesBeforeTest = $this->getQueueAttributes();
-    $manager = new \Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
+    $manager = new Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
     $messageReceiver = new FakeMessageReceiver();
     $manager->setMaxNumberOfMessages(10);
 
@@ -101,7 +101,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
   public function testReleaseAllMessagesIfExceptionThrown()
   {
     $queueAttributesBeforeTest = $this->getQueueAttributes();
-    $manager = new \Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
+    $manager = new Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
     $messageReceiver = new FakeMessageReceiver();
     $manager->setMaxNumberOfMessages(10);
 
@@ -123,7 +123,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
   public function testDeleteUsedMessagesAlreadyDeleted()
   {
     $queueAttributesBeforeTest = $this->getQueueAttributes();
-    $manager = new \Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
+    $manager = new Manager(AWS_KEY, AWS_SECRET, AWS_REGION);
     $messageReceiver = new FakeMessageReceiver();
     $manager->setMaxNumberOfMessages(10);
 

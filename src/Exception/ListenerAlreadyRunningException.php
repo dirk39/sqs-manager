@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Exception;
+namespace SQSManager\Exception;
 
 class ListenerAlreadyRunningException extends \RuntimeException
 {
