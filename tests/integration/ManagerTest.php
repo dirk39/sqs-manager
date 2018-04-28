@@ -35,9 +35,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
       'version' => self::$version
     ]);
 
-    self::$queueUrl = self::$client->createQueue([
-      'QueueName' => AWS_QUEUE_NAME
-    ])['QueueUrl'];
+    self::$queueUrl = self::createQueue(AWS_QUEUE_NAME);
 
     for($i = 0;$i < 15; $i++)
     {
@@ -53,6 +51,18 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         'Entries' => $chunked
       ]);
     }
+  }
+
+  /**
+   * @param $queueName
+   *
+   * @return string
+   */
+  private static function createQueue($queueName)
+  {
+    return self::$client->createQueue([
+      'QueueName' => $queueName
+    ])['QueueUrl'];
   }
 
   protected function setUp()
@@ -73,7 +83,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
     try
     {
-      self::$client->deleteQueue(['QueueUrl' => self::$queueUrl]);
+      self::$client->purgeQueue(['QueueUrl' => self::$queueUrl]);
     }
     catch (\Exception $e) {}
   }
