@@ -3,12 +3,11 @@
 namespace SQSManager;
 
 use \Aws\Sqs\SqsClient;
-use \Symfony\Component\Filesystem\LockHandler;
 use SQSManager\Exception\VisibilityTimeoutException;
 
 class Manager implements ManagerInterface
 {
-  private $client, $lockHandler;
+  private $client;
 
   private $version = '2012-11-05';
 
@@ -62,45 +61,31 @@ class Manager implements ManagerInterface
     return $this;
   }
 
-  public function run($queueName, $callback, $keepAlive = false, array $listenerConfigs = [])
+  public function run($queueName, $callback, array $listenerConfigs = [])
   {
-    if($keepAlive)
-    {
-      $this->setPermanentListener($queueName);
-    }
-
     $queueUrl = $this->getQueueUrl($queueName);
     $configs = $this->prepareListenerConfigs($listenerConfigs + ['QueueUrl' => $queueUrl]);
 
-    do
+    $response = $this->client->receiveMessage($configs);
+    $messages = (array)$response['Messages'];
+
+    $this->timeReceivedMessage = microtime(true);
+    $messages = $this->prepareMessageCollection($messages);
+
+    try
     {
-      $response = $this->client->receiveMessage($configs);
-      $messages = (array)$response['Messages'];
-      if(!$messages)
-      {
-        continue;
+      foreach ($messages as $key => $message) {
+        $this->checkMessageTimedOut();
+
+        call_user_func($callback, $message);
+
+        $this->deleteMessage($queueUrl, $message);
+
       }
-
-      $this->timeReceivedMessage = microtime(true);
-      $messages = $this->prepareMessageCollection($messages);
-
-      try
-      {
-        foreach ($messages as $key => $message) {
-          $this->checkMessageTimedOut();
-
-          call_user_func($callback, $message);
-
-          $this->deleteMessage($queueUrl, $message);
-
-        }
-      }
-      catch(\Exception $e) {
-        $this->releaseAllMessages($queueUrl, $messages);
-      }
-
-
-    }while($keepAlive);
+    }
+    catch(\Exception $e) {
+      $this->releaseAllMessages($queueUrl, $messages);
+    }
   }
 
 
@@ -200,30 +185,4 @@ class Manager implements ManagerInterface
 
     return array_replace($defaultOptions, $options);
   }
-
-  /**
-   * @param $queueName
-   *
-   * @throws Exception\ListenerAlreadyRunningException
-   */
-  protected function setPermanentListener($queueName)
-  {
-    $this->lockHandler = new LockHandler($this->getTempFileName($queueName));
-    if(!$this->lockHandler->lock()) {
-      throw new Exception\ListenerAlreadyRunningException($queueName);
-    }
-
-    return true;
-  }
-
-  /**
-   * @param $queueName
-   * @return string
-   */
-  private function getTempFileName($queueName)
-  {
-    return sha1(__CLASS__.'_'.$queueName).'.lock';
-  }
-
-
 }
