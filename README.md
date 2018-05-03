@@ -41,3 +41,6 @@ $manager = new SQSManager\Manager('AWS_APP_ID', 'AWS_APP_SECRET', 'AWS_REGION', 
  - `setWaitTimeSeconds`: change default `WaitTimeSeconds` value. It must be an integer between and 1 and 20 seconds.
  - `setMaxNumberOfMessages`: change default `MaxNumberOfMessages` value. It must be an integer between and 1 and 10.
  
+ ## Testing
+ To replicate integration tests you have to copy `tests/config.example.php` into `tests/configs.php` and replace default values for `AWS_KEY`, `AWS_SECRET`, `AWS_REGION`, `AWS_QUEUE_NAME` with your values.
+ Important: AWS credentials must be of a user with read/write permission for Amazon SQS. At the end of the tests, designed queue will be purged of all messages so don't use production SQS queue!
