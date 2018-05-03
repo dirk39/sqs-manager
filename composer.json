@@ -1,6 +1,7 @@
 {
   "name": "dirk39/sqs-manager",
   "description": "Simple library that fetch and manage messages from SQS Queue",
+  "license": "mit",
   "authors": [{
     "name": "Andrea Quintino"
   }],
