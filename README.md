@@ -1,10 +1,10 @@
 # SQS Manager
 [![Build Status](https://travis-ci.org/dirk39/sqs-manager.svg?branch=master)](https://travis-ci.org/dirk39/sqs-manager)
 
-SQS Manager is a library that simplify fetch of messages from a SQS Queue. SQS Manager read messages from the queue you want, prepare a `SQSManager\Message` object and pass it to function or method you want. The main advantages of this libray are: 
+SQS Manager is a library that simplifies fetching of messages from a SQS Queue. SQS Manager reads messages from the queue you want, prepares a `SQSManager\Message` object and pass it to function or method you define. The main advantages of this libray are: 
  - After the message has been depleted will be deleted from the queue by the Manager. 
- - If an exception will be caught by the Manager, remaining messages will be released and caught exception will be thrown. 
- - If manager retrieve more than one message, Manager will pass messages one by one to designed method/function. After the execution the Manager will check visibilityTimeout and if near to expiration, it will extend according to the `VisibilityTimeout` value set and if timeout is less than 12 hours (max visibility timeout from SQS Documentation) for remaining messages.
+ - If an exception is caught by the Manager, remaining messages will be released and the caught exception will be thrown. 
+ - If Manager retrieves several messages, it will pass them one by one to designed method/function. Afterwards the Manager will check `VisibilityTimeout` of remaining messages and in case of short expiry date, it will extend the expiration according to the `VisibilityTimeout` value. According to the [AWS SQS documetation](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html), the maximum timeout is 12 hours.
 
 ## Installation
 SQSManager can be installed by composer
