@@ -15,6 +15,8 @@ class Manager implements ManagerInterface
 
   private $timeReceivedMessage;
 
+  private $dispatcher;
+
   public function __construct($appId, $appSecret, $region, array $configs = [])
   {
     $configs = array_replace([
@@ -86,6 +88,11 @@ class Manager implements ManagerInterface
     catch(\Exception $e) {
       $this->releaseAllMessages($queueUrl, $messages);
     }
+  }
+
+  public function setDispatcher(DispatcherInterface $dispatcher)
+  {
+    $this->dispatcher = $dispatcher;
   }
 
 
