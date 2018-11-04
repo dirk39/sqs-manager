@@ -17,13 +17,24 @@ class Dispatcher implements DispatcherInterface
     // TODO: Implement dispatch() method.
   }
 
-  public function addListener($queueName, $listener)
+  public function addListener($queueName, $listener, $priority = 0)
   {
     if(!is_callable($listener)) {
       throw new \SQSManager\Exception\InvalidListenerException();
     }
 
-    $this->listeners[$queueName][] = $listener;
+    $this->listeners[$queueName][] = ['priority' => $priority, 'listener' => $listener];
+    usort($this->listeners[$queueName], function ($a, $b){
+      if( $a['priority'] == $b['priority']) {
+        return 0;
+      }
+
+      if( $a['priority'] > $b['priority']) {
+        return 1;
+      }
+
+      return -1;
+    });
   }
 
   /**
@@ -32,6 +43,10 @@ class Dispatcher implements DispatcherInterface
    */
   public function getListeners($queueName)
   {
-    return isset($this->listeners[$queueName])? $this->listeners[$queueName]: [];
+    if(!isset($this->listeners[$queueName])) {
+      return [];
+    }
+
+    return array_column($this->listeners[$queueName],'listener');
   }
 }

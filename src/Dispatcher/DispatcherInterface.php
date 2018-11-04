@@ -12,7 +12,13 @@ interface DispatcherInterface
 {
   public function dispatch($queueName);
 
-  public function addListener($queueName, $listener);
+  /**
+   * @param string $queueName
+   * @param callable $listener
+   * @param int $priority
+   * @return array
+   */
+  public function addListener($queueName, $listener, $priority = 0);
 
   /**
    * @param string $queueName
