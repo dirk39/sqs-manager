@@ -8,13 +8,19 @@
 
 namespace SQSManager\Dispatcher;
 
+use SQSManager\MessageInterface;
+
 class Dispatcher implements DispatcherInterface
 {
   private $listeners = [];
 
-  public function dispatch($queueName)
+  public function dispatch($queueName, MessageInterface $message)
   {
-    // TODO: Implement dispatch() method.
+    $listeners = $this->getListeners($queueName);
+
+    foreach ($listeners as $listener) {
+      $listener($message);
+    }
   }
 
   public function addListener($queueName, $listener, $priority = 0)

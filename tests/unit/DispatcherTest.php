@@ -10,6 +10,7 @@ namespace test\unit;
 
 use SQSManager\Exception\InvalidListenerException;
 use SQSManager\Dispatcher\Dispatcher;
+use SQSManager\Message;
 use SQSManager\MessageInterface;
 
 class DispatcherTest extends \PHPUnit_Framework_TestCase
@@ -48,6 +49,22 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
       [$first, $second, $third],
       $dispatcher->getListeners('sqs_queue_1')
     ));
+  }
+
+  public function testDispatchEvent()
+  {
+    $dispatcher = new Dispatcher;
+    $checker = new \stdClass;
+    $checker->ran = false;
+
+    $dispatcher->addListener('sqs_queue_1', function(MessageInterface $message) use($checker){
+      $checker->ran = true;
+    });
+
+    $message = new Message('1','awsa',md5("test"), "test");
+    $dispatcher->dispatch('sqs_queue_1', $message);
+
+    $this->assertTrue($checker->ran);
   }
 
   private function arrays_are_similar($a, $b)

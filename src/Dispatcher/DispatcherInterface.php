@@ -8,9 +8,15 @@
 
 namespace SQSManager\Dispatcher;
 
+use SQSManager\MessageInterface;
+
 interface DispatcherInterface
 {
-  public function dispatch($queueName);
+  /**
+   * @param string $queueName
+   * @param MessageInterface $message
+   */
+  public function dispatch($queueName, MessageInterface $message);
 
   /**
    * @param string $queueName
